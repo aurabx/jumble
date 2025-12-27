@@ -1,0 +1,30 @@
+[project]
+name = "jumble"
+description = "MCP server providing queryable, on-demand project context to LLMs"
+language = "rust"
+version = "0.1.0"
+repository = "https://github.com/xtfer/jumble"
+
+[commands]
+build = "cargo build --release"
+test = "cargo test"
+lint = "cargo clippy && cargo fmt --check"
+run = "cargo run"
+
+[entry_points]
+main = "src/main.rs"
+
+[dependencies]
+external = ["clap", "serde", "serde_json", "toml", "walkdir", "anyhow"]
+
+[concepts.mcp_protocol]
+files = ["src/main.rs"]
+summary = "JSON-RPC over stdio implementing MCP initialize, tools/list, tools/call"
+
+[concepts.project_discovery]
+files = ["src/main.rs"]
+summary = "Recursive scanning for .jumble/project.toml files using walkdir"
+
+[concepts.tool_handlers]
+files = ["src/main.rs"]
+summary = "Five tools: list_projects, get_project_info, get_commands, get_architecture, get_related_files"

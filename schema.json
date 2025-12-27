@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/xtfer/jumble/schema.json",
+  "title": "Jumble Project Configuration",
+  "description": "Schema for .jumble/project.toml files that provide queryable context to LLMs",
+  "type": "object",
+  "required": ["project"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "description": "Core project metadata",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name (should match directory name or manifest name)"
+        },
+        "description": {
+          "type": "string",
+          "description": "One-line description of what the project does"
+        },
+        "language": {
+          "type": "string",
+          "description": "Primary programming language",
+          "examples": ["rust", "typescript", "python", "go", "php", "java"]
+        },
+        "version": {
+          "type": "string",
+          "description": "Current version from manifest"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "Repository URL"
+        }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "description": "Executable commands for common tasks",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Shell command to execute"
+      },
+      "properties": {
+        "build": {
+          "type": "string",
+          "description": "Command to build the project"
+        },
+        "test": {
+          "type": "string",
+          "description": "Command to run tests"
+        },
+        "lint": {
+          "type": "string",
+          "description": "Command to run linting/formatting checks"
+        },
+        "run": {
+          "type": "string",
+          "description": "Command to run the project"
+        },
+        "dev": {
+          "type": "string",
+          "description": "Command to run in development mode (e.g., with hot reload)"
+        }
+      }
+    },
+    "entry_points": {
+      "type": "object",
+      "description": "Key files that serve as entry points to understand the codebase",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Relative path to the file"
+      },
+      "properties": {
+        "main": {
+          "type": "string",
+          "description": "Main entry point (e.g., src/main.rs, src/index.ts)"
+        },
+        "config": {
+          "type": "string",
+          "description": "Configuration handling"
+        },
+        "api": {
+          "type": "string",
+          "description": "API definition or routes"
+        }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Project dependencies",
+      "properties": {
+        "internal": {
+          "type": "array",
+          "description": "Other projects in the same workspace this depends on",
+          "items": {
+            "type": "string"
+          }
+        },
+        "external": {
+          "type": "array",
+          "description": "Key third-party dependencies (top 5-10 most important)",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "related_projects": {
+      "type": "object",
+      "description": "Related projects in the workspace",
+      "properties": {
+        "upstream": {
+          "type": "array",
+          "description": "Projects this one consumes/depends on",
+          "items": {
+            "type": "string"
+          }
+        },
+        "downstream": {
+          "type": "array",
+          "description": "Projects that consume this one",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "api": {
+      "type": "object",
+      "description": "API information (for services)",
+      "properties": {
+        "openapi": {
+          "type": "string",
+          "description": "Path to OpenAPI/Swagger spec"
+        },
+        "base_url": {
+          "type": "string",
+          "description": "API base path"
+        },
+        "endpoints": {
+          "type": "array",
+          "description": "Key endpoints (format: 'METHOD /path')",
+          "items": {
+            "type": "string",
+            "pattern": "^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) /.+$"
+          }
+        }
+      }
+    },
+    "concepts": {
+      "type": "object",
+      "description": "Architectural concepts and their associated files",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["files", "summary"],
+        "properties": {
+          "files": {
+            "type": "array",
+            "description": "Files that implement this concept",
+            "items": {
+              "type": "string"
+            }
+          },
+          "summary": {
+            "type": "string",
+            "description": "One-sentence explanation of how this concept is implemented"
+          }
+        }
+      }
+    }
+  }
+}

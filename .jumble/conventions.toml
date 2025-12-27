@@ -1,0 +1,45 @@
+# Jumble Conventions and Gotchas
+# Project-specific patterns for this MCP server
+
+[conventions]
+single_file_architecture = """
+Jumble is intentionally a single-file Rust application (src/main.rs). This keeps the codebase 
+simple and easy to understand. Only split into modules if complexity genuinely warrants it."""
+
+tool_implementation_pattern = """
+Each tool follows the pattern: 1) Add tool definition JSON to handle_tools_list(), 2) Add match 
+arm in handle_tools_call(), 3) Implement tool_<name>(&self, args: &Value) -> Result<String, String>. 
+Tools return markdown-formatted strings for display."""
+
+project_tuple_pattern = """
+Projects are stored as 4-tuples: (PathBuf, ProjectConfig, ProjectPrompts, ProjectConventions). 
+When destructuring, use underscores for unused elements: let (path, config, _, _) = ..."""
+
+toml_config_files = """
+All project metadata lives in .jumble/ directories. project.toml is required, conventions.toml 
+and prompts/*.md are optional. Use TOML multi-line strings (triple quotes) for longer content."""
+
+markdown_output = """
+Tool output should be formatted as markdown for readability in LLM interfaces. Use headers (##), 
+bold (**text**), and code blocks where appropriate."""
+
+[gotchas]
+json_rpc_stdio = """
+Jumble uses JSON-RPC over stdio. Each request/response must be a single line of JSON. Never 
+print debug output to stdout - use stderr or logging. Stray output breaks the protocol."""
+
+initialize_before_tools = """
+MCP clients must call 'initialize' before any tool calls. Projects are loaded during 
+initialization, not at startup. Testing requires sending initialize first."""
+
+project_name_vs_directory = """
+The project name comes from project.toml [project].name, NOT the directory name. When testing, 
+use the configured name (e.g., 'harmony' not 'harmony-proxy')."""
+
+hashmap_ordering = """
+HashMap iteration order is not deterministic. Don't rely on specific ordering in tool output. 
+If order matters, collect keys and sort them first."""
+
+path_resolution = """
+All paths in project.toml are relative to the project root (where .jumble/ lives). The server 
+resolves them to absolute paths internally. Don't store absolute paths in config files."""
