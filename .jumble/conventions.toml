@@ -28,9 +28,9 @@ json_rpc_stdio = """
 Jumble uses JSON-RPC over stdio. Each request/response must be a single line of JSON. Never 
 print debug output to stdout - use stderr or logging. Stray output breaks the protocol."""
 
-initialize_before_tools = """
-MCP clients must call 'initialize' before any tool calls. Projects are loaded during 
-initialization, not at startup. Testing requires sending initialize first."""
+hot_reload_on_query = """
+Jumble rebuilds its project list on every tool call, not just at startup. This means new .jumble 
+files and changes to existing ones are picked up immediately without server restart."""
 
 project_name_vs_directory = """
 The project name comes from project.toml [project].name, NOT the directory name. When testing, 
