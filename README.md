@@ -52,7 +52,7 @@ LLM: "What conventions should I follow?"
 cargo install --path .
 ```
 
-### From crates.io (coming soon)
+### From crates.io
 
 ```bash
 cargo install jumble
