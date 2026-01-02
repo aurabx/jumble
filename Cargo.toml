@@ -4,7 +4,7 @@ version = "0.3.0"
 edition = "2021"
 description = "An MCP server that provides queryable, on-demand project context to LLMs"
 license = "MIT"
-repository = "https://github.com/aurabx/jumble"
+repository = "https://github.com/velvet-tiger/jumble"
 keywords = ["mcp", "llm", "context", "ai"]
 categories = ["development-tools"]
 

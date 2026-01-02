@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/xtfer/jumble/schema.json",
+  "$id": "https://github.com/velvet-tiger/jumble/schema.json",
   "title": "Jumble Project Configuration",
   "description": "Schema for .jumble/project.toml files that provide queryable context to LLMs",
   "type": "object",

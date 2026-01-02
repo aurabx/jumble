@@ -2,22 +2,6 @@
 
 An MCP server that provides queryable, on-demand project context to LLMs.
 
----
-
-<div align="center">
-
-### 🛠️ This project was built by [Aurabox](https://github.com/aurabx)
-
-*Some of our other projects...*
-
-[![Harmony](https://img.shields.io/badge/Harmony-API_Gateway-purple?style=flat-square)](https://github.com/aurabox/harmony-proxy)
-[![Runbeam](https://img.shields.io/badge/Runbeam-Data_Mesh_Platform-purple?style=flat-square)](https://runbeam.io)
-[![JMIX](https://img.shields.io/badge/Aurabox-Medical_Imaging_Exchange-blue?style=flat-square)](https://aurabox.cloud)
-
-</div>
-
----
-
 ## The Problem
 
 Large documentation files and WARP.md overload LLM context windows. Even well-structured docs require reading everything upfront, wasting tokens on irrelevant information.
@@ -288,17 +272,3 @@ taplo check .jumble/project.toml --schema /path/to/jumble/schema.json
 ## License
 
 MIT
-
----
-
-<div align="center">
-
-### 🛠️ This project was built by [Aurabox](https://github.com/aurabx)
-
-*Some of our other projects...*
-
-[![Harmony](https://img.shields.io/badge/Harmony-API_Gateway-purple?style=flat-square)](https://github.com/aurabox/harmony-proxy)
-[![Runbeam](https://img.shields.io/badge/Runbeam-Data_Mesh_Platform-purple?style=flat-square)](https://runbeam.io)
-[![JMIX](https://img.shields.io/badge/Aurabox-Medical_Imaging_Exchange-blue?style=flat-square)](https://aurabox.cloud)
-
-</div>
