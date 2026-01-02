@@ -54,6 +54,16 @@ cargo install jumble
 
 Jumble discovers projects by scanning for `.jumble/project.toml` files. It also looks for a `.jumble/workspace.toml` at the root for workspace-level configuration.
 
+On startup, Jumble also looks for a global configuration file at `~/.jumble/jumble.toml`
+(or the platform-specific equivalent of your home directory). If this file does
+not exist, Jumble will create it with a minimal
+
+```toml
+[jumble]
+```
+
+section reserved for future options.
+
 Projects and workspace metadata are loaded once when the server starts and cached in memory. If you change any `.jumble/*` files, either restart the `jumble` process or call the `reload_workspace` tool (see below) to pick up changes without restarting.
 
 Set the root directory via:

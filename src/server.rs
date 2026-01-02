@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 use crate::config::{
+    JumbleConfig,
     ProjectConfig,
     ProjectConventions,
     ProjectDocs,
@@ -23,6 +24,9 @@ pub struct Server {
     pub root: PathBuf,
     pub workspace: Option<WorkspaceConfig>,
     pub projects: HashMap<String, ProjectData>,
+    /// Global Jumble configuration loaded from `~/.jumble/jumble.toml`.
+    #[allow(dead_code)]
+    pub jumble_config: Option<JumbleConfig>,
 }
 
 impl Server {
@@ -31,6 +35,7 @@ impl Server {
             root,
             workspace: None,
             projects: HashMap::new(),
+            jumble_config: load_jumble_config(),
         };
         server.reload_workspace_and_projects()?;
         Ok(server)
@@ -339,6 +344,60 @@ fn resolve_home_dir() -> Option<PathBuf> {
     None
 }
 
+/// Load global Jumble configuration from `~/.jumble/jumble.toml`, creating a
+/// default file if it does not exist. Failures to read or parse the file are
+/// logged to stderr but do not prevent the server from starting.
+fn load_jumble_config() -> Option<JumbleConfig> {
+    let home_dir = resolve_home_dir()?;
+    let jumble_dir = home_dir.join(".jumble");
+    let config_path = jumble_dir.join("jumble.toml");
+
+    if !config_path.exists() {
+        if let Err(e) = std::fs::create_dir_all(&jumble_dir) {
+            eprintln!(
+                "jumble: failed to create global config directory at {}: {}",
+                jumble_dir.display(),
+                e
+            );
+            return None;
+        }
+
+        let default_content = "# Global configuration for the Jumble MCP server.\n\n[jumble]\n";
+        if let Err(e) = std::fs::write(&config_path, default_content) {
+            eprintln!(
+                "jumble: failed to create default config at {}: {}",
+                config_path.display(),
+                e
+            );
+            return None;
+        }
+    }
+
+    let content = match std::fs::read_to_string(&config_path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!(
+                "jumble: failed to read global config at {}: {}",
+                config_path.display(),
+                e
+            );
+            return None;
+        }
+    };
+
+    match toml::from_str::<JumbleConfig>(&content) {
+        Ok(cfg) => Some(cfg),
+        Err(e) => {
+            eprintln!(
+                "jumble: failed to parse global config at {}: {}",
+                config_path.display(),
+                e
+            );
+            None
+        }
+    }
+}
+
 /// Discover structured skills (Claude/Codex-style) with SKILL.md files and companion resources.
 fn discover_structured_skills_in_dir(root: &Path, skills: &mut ProjectSkills) {
     for entry in WalkDir::new(root)
@@ -571,11 +630,17 @@ mod tests {
         let home = resolve_home_dir().expect("expected home directory");
         assert_eq!(home, tmp_root);
 
+        // Loading global Jumble config should create ~/.jumble/jumble.toml if missing.
+        let cfg = load_jumble_config();
+        let cfg_path = home.join(".jumble").join("jumble.toml");
+        assert!(cfg_path.exists());
+        assert!(cfg.is_some());
+
         // Global Jumble skills live in <home>/.jumble/skills/*.md
         let global_skills_dir = home.join(".jumble").join("skills");
         std::fs::create_dir_all(&global_skills_dir).unwrap();
         let global_skill_path = global_skills_dir.join("global-skill.md");
-        std::fs::write(&global_skill_path, "# Global Skill\nBody").unwrap();
+        std::fs::write(&global_skill_path, "# Global Skill\\nBody").unwrap();
 
         // Create a fake project with a .jumble directory.
         let project_root = home.join("workspace").join("my-project");
@@ -585,14 +650,15 @@ mod tests {
 
         // Local skill with the same stem as a global one should win.
         let local_first_path = project_skills_dir.join("local-first.md");
-        std::fs::write(&local_first_path, "# Local First\nBody").unwrap();
+        std::fs::write(&local_first_path, "# Local First\\nBody").unwrap();
         let global_conflict_path = global_skills_dir.join("local-first.md");
-        std::fs::write(&global_conflict_path, "# Global Conflict\nBody").unwrap();
+        std::fs::write(&global_conflict_path, "# Global Conflict\\nBody").unwrap();
 
         let server = Server {
             root: project_root.clone(),
             workspace: None,
             projects: HashMap::new(),
+            jumble_config: cfg,
         };
 
         let skills = server.discover_skills(&jumble_dir);

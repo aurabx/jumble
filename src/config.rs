@@ -154,6 +154,26 @@ pub struct WorkspaceInfo {
     pub description: Option<String>,
 }
 
+// ============================================================================
+// Global Jumble Configuration (~/.jumble/jumble.toml)
+// ============================================================================
+
+/// Global configuration loaded from `~/.jumble/jumble.toml` (or the
+/// platform-specific equivalent of the user's home directory). This file is
+/// created on startup if it does not exist and currently reserves a single
+/// top-level `[jumble]` table for future options.
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+pub struct JumbleConfig {
+    #[serde(default)]
+    pub jumble: JumbleSection,
+}
+
+/// Placeholder for future Jumble-wide options under the `[jumble]` table.
+/// At the moment this is intentionally empty but ensures we always have a
+/// well-typed location for future configuration.
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+pub struct JumbleSection {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
