@@ -16,16 +16,24 @@ use crate::tools::{self, ProjectData};
 pub struct Server {
     pub root: PathBuf,
     pub workspace: Option<WorkspaceConfig>,
+    pub projects: HashMap<String, ProjectData>,
 }
 
 impl Server {
     pub fn new(root: PathBuf) -> Result<Self> {
-        let workspace = Self::load_workspace_static(&root);
-        let server = Server {
+        let mut server = Server {
             root,
-            workspace,
+            workspace: None,
+            projects: HashMap::new(),
         };
+        server.reload_workspace_and_projects()?;
         Ok(server)
+    }
+
+    fn reload_workspace_and_projects(&mut self) -> Result<()> {
+        self.workspace = Self::load_workspace_static(&self.root);
+        self.projects = self.discover_projects()?;
+        Ok(())
     }
 
     fn load_workspace_static(root: &Path) -> Option<WorkspaceConfig> {
@@ -175,25 +183,22 @@ impl Server {
 
         let arguments = params.get("arguments").cloned().unwrap_or(json!({}));
 
-        // Rebuild projects on each call for hot reloading
-        let projects = self.discover_projects().map_err(|e| JsonRpcError {
-            code: -32603,
-            message: format!("Failed to discover projects: {}", e),
-            data: None,
-        })?;
-
         let result = match name {
-            "list_projects" => tools::list_projects(&projects),
-            "get_project_info" => tools::get_project_info(&projects, &arguments),
-            "get_commands" => tools::get_commands(&projects, &arguments),
-            "get_architecture" => tools::get_architecture(&projects, &arguments),
-            "get_related_files" => tools::get_related_files(&projects, &arguments),
-            "list_prompts" => tools::list_prompts(&projects, &arguments),
-            "get_prompt" => tools::get_prompt(&projects, &arguments),
-            "get_conventions" => tools::get_conventions(&projects, &arguments),
-            "get_docs" => tools::get_docs(&projects, &arguments),
+            "reload_workspace" => match self.reload_workspace_and_projects() {
+                Ok(()) => Ok("Workspace and projects reloaded from disk.".to_string()),
+                Err(e) => Err(format!("Failed to reload workspace: {}", e)),
+            },
+            "list_projects" => tools::list_projects(&self.projects),
+            "get_project_info" => tools::get_project_info(&self.projects, &arguments),
+            "get_commands" => tools::get_commands(&self.projects, &arguments),
+            "get_architecture" => tools::get_architecture(&self.projects, &arguments),
+            "get_related_files" => tools::get_related_files(&self.projects, &arguments),
+            "list_prompts" => tools::list_prompts(&self.projects, &arguments),
+            "get_prompt" => tools::get_prompt(&self.projects, &arguments),
+            "get_conventions" => tools::get_conventions(&self.projects, &arguments),
+            "get_docs" => tools::get_docs(&self.projects, &arguments),
             "get_workspace_overview" => {
-                tools::get_workspace_overview(&self.root, &self.workspace, &projects)
+                tools::get_workspace_overview(&self.root, &self.workspace, &self.projects)
             }
             "get_workspace_conventions" => {
                 tools::get_workspace_conventions(&self.workspace, &arguments)

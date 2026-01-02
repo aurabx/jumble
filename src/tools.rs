@@ -198,6 +198,15 @@ pub fn tools_list() -> Value {
                     },
                     "required": []
                 }
+            },
+            {
+                "name": "reload_workspace",
+                "description": "Reloads workspace and project metadata from disk. Use this after editing .jumble files to pick up changes without restarting the server.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
             }
         ]
     })
@@ -1012,5 +1021,6 @@ mod tests {
         assert!(tool_names.contains(&"get_docs"));
         assert!(tool_names.contains(&"get_workspace_overview"));
         assert!(tool_names.contains(&"get_workspace_conventions"));
+        assert!(tool_names.contains(&"reload_workspace"));
     }
 }
