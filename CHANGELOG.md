@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Workspace and project discovery is now performed once at startup and cached in memory, rather than rescanning the filesystem on every tools call.
 - Updated README to describe the cached behavior and the `reload_workspace` tool.
+- Simplified the GitHub Actions release workflow to build multi-platform binaries and publish them as GitHub Releases, removing the Docker image build step.
 
 ## [0.2.0]
 
