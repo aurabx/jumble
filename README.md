@@ -198,6 +198,13 @@ Reloads workspace and project metadata from disk. Use this after editing `.jumbl
 reload_workspace()
 ```
 
+#### get_jumble_authoring_prompt
+Returns a canonical prompt you can feed to an AI assistant to generate `.jumble` context files (project, workspace, conventions, docs) for any project.
+
+```
+get_jumble_authoring_prompt()
+```
+
 ### Project Tools
 
 #### list_projects

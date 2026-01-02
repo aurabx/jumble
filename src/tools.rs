@@ -207,9 +207,76 @@ pub fn tools_list() -> Value {
                     "properties": {},
                     "required": []
                 }
+            },
+            {
+                "name": "get_jumble_authoring_prompt",
+                "description": "Returns a canonical prompt and guidance for creating .jumble context files (project, workspace, conventions, docs) in any project.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
             }
         ]
     })
+}
+
+pub fn get_jumble_authoring_prompt() -> Result<String, String> {
+    let prompt = r#"# Jumble authoring prompt
+
+Use this prompt with an AI assistant to create Jumble context files for a project or workspace.
+
+## Full prompt
+
+```
+Create jumble context for this project.
+
+Read the AUTHORING.md guide at https://github.com/velvet-tiger/jumble/blob/main/AUTHORING.md, then examine this project's structure to create:
+
+1. `.jumble/project.toml` (required)
+   - Extract name, description, language from manifest files
+   - Identify build/test/lint commands
+   - Map 3–5 architectural concepts to their files
+   - Note upstream/downstream project relationships
+
+2. `.jumble/conventions.toml`
+   - Capture coding patterns to follow (look at existing code)
+   - Document gotchas and non-obvious behaviors
+   - Check for constitution.md, CONTRIBUTING.md, or similar guides
+
+3. `.jumble/docs.toml`
+   - Index the docs/ directory if it exists
+   - Write one-line summaries that help find the right doc
+
+Focus on what helps an AI understand this codebase quickly. Don't over-document:
+- 3–5 concepts
+- 5–7 conventions/gotchas
+- Index only human-written docs, not generated API docs
+```
+
+## Minimal prompt
+
+```
+Create jumble context for this project following the guide at https://github.com/velvet-tiger/jumble/blob/main/AUTHORING.md
+```
+
+## Workspace-level usage
+
+For monorepos or multi-project workspaces, you can ask the AI to:
+
+- Create `.jumble/workspace.toml` at the workspace root with:
+  - Workspace name and description
+  - Cross-project conventions (coding standards, tooling)
+  - Common gotchas that span multiple projects
+- Then, for each important project, create `.jumble/project.toml` with:
+  - Project metadata and commands
+  - Key concepts mapped to files
+  - Upstream/downstream relationships to other workspace projects
+
+Start with the most important projects. Use `related_projects` to show how they connect.
+"#;
+
+    Ok(prompt.to_string())
 }
 
 // ============================================================================
@@ -1052,5 +1119,6 @@ mod tests {
         assert!(tool_names.contains(&"get_workspace_overview"));
         assert!(tool_names.contains(&"get_workspace_conventions"));
         assert!(tool_names.contains(&"reload_workspace"));
+        assert!(tool_names.contains(&"get_jumble_authoring_prompt"));
     }
 }

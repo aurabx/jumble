@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - New `reload_workspace` MCP tool to reload `.jumble` workspace and project metadata from disk without restarting the server.
+- New `get_jumble_authoring_prompt` MCP tool that returns a canonical prompt for generating `.jumble` context files in any project or workspace.
 
 ### Changed
 - Workspace and project discovery is now performed once at startup and cached in memory, rather than rescanning the filesystem on every tools call.

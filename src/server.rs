@@ -238,6 +238,7 @@ impl Server {
             "get_workspace_conventions" => {
                 tools::get_workspace_conventions(&self.workspace, &arguments)
             }
+            "get_jumble_authoring_prompt" => tools::get_jumble_authoring_prompt(),
             _ => Err(format!("Unknown tool: {}", name)),
         };
 
