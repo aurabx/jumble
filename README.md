@@ -30,6 +30,14 @@ LLM: "What conventions should I follow?"
 
 ## Installation
 
+### Prebuilt binaries
+
+Prebuilt binaries for common platforms (Linux, macOS, Windows) are available on the GitHub Releases page:
+
+- https://github.com/velvet-tiger/jumble/releases/
+
+Download the archive for your platform, extract it, and point your MCP client at the extracted `jumble` binary.
+
 ### From source
 
 ```bash
