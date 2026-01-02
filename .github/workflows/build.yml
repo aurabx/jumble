@@ -1,0 +1,154 @@
+# .github/workflows/release.yml
+name: Releases
+
+on:
+  push:
+    tags:
+      - '**'      # Match all tags, e.g. 1.0.0, release-1, beta, etc.
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  PKG_CONFIG_ALLOW_CROSS: 1
+
+jobs:
+  build-binaries:
+    name: Build and package binaries
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux (most common distros and containers)
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu        # Ubuntu, Debian, Fedora, RHEL, etc.
+          - os: ubuntu-24.04
+            target: aarch64-unknown-linux-gnu       # ARM64 Ubuntu/Debian servers
+
+          # macOS (Intel + Apple Silicon)
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+
+          # Windows (x64)
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          # Use different cache for cross-compilation to avoid glibc version conflicts
+          key: ${{ matrix.target }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      # --- Cross Compilation Setup (ARM Linux) ---
+      - name: Install cross for ARM builds
+        if: matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'armv7-unknown-linux-gnueabihf'
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      # --- Build step per OS ---
+      - name: Build jumble
+        shell: bash
+        run: |
+          case "${{ runner.os }}" in
+            Windows)
+              echo "Building for Windows..."
+              cargo build --release --target ${{ matrix.target }}
+              ;;
+            macOS)
+              echo "Building for macOS..."
+              cargo build --release --target ${{ matrix.target }}
+              ;;
+            Linux)
+              case "${{ matrix.target }}" in
+                aarch64-unknown-linux-gnu|armv7-unknown-linux-gnueabihf)
+                  echo "Building for ARM target ${{ matrix.target }} with cross..."
+                  cross build --release --target ${{ matrix.target }}
+                  ;;
+                *)
+                  echo "Building for Linux target ${{ matrix.target }}..."
+                  cargo build --release --target ${{ matrix.target }}
+                  ;;
+              esac
+              ;;
+          esac
+
+      # --- Package ---
+      - name: Package artefacts
+        shell: bash
+        run: |
+          mkdir -p release
+          cp target/${{ matrix.target }}/release/jumble* release/ 2>/dev/null || \
+          cp target/${{ matrix.target }}/release/jumble.exe release/ || true
+          cd release
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            tar czf jumble-${{ matrix.target }}.tar.gz jumble*.exe || true
+          else
+            tar czf jumble-${{ matrix.target }}.tar.gz jumble* || true
+          fi
+
+      # --- Checksums ---
+      - name: Generate SHA256 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Get-FileHash "release/jumble-${{ matrix.target }}.tar.gz" -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash)  jumble-${{ matrix.target }}.tar.gz" } |
+            Out-File "release/jumble-${{ matrix.target }}.sha256" -Encoding ascii
+
+      - name: Generate SHA256 (non-Windows)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          shasum -a 256 release/jumble-${{ matrix.target }}.tar.gz > release/jumble-${{ matrix.target }}.sha256
+
+      - name: Upload artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jumble-${{ matrix.target }}
+          path: release/
+
+  # ---------- Publish GitHub Release (tags only) ----------
+  release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-binaries]
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download jumble build artefacts only
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+          pattern: jumble-*           # Only match real binaries
+          merge-multiple: true        # Flattens them into one directory
+
+      - name: Generate combined checksums manifest
+        shell: bash
+        run: |
+          cd artifacts
+          find . -type f -name "*.sha256" -exec cat {} \; > checksums.txt
+          echo "Combined checksums:"
+          cat checksums.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: jumble ${{ github.ref_name }}
+          files: ./artifacts/**/*
+          draft: false
+          prerelease: ${{ contains(github.ref, 'beta') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
