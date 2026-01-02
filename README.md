@@ -105,9 +105,65 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 Jumble supports loading Claude Skills.md files.
 
+## Usage with Windsurf
+
+Windsurf's Cascade MCP config uses the same shape as Claude Desktop's config. Create or edit `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "jumble": {
+      "command": "/absolute/path/to/jumble",
+      "args": ["--root", "/path/to/your/workspace"]
+    }
+  }
+}
+```
+
+Restart Windsurf so Cascade reloads MCP servers, then verify that `jumble` appears in the tools list.
+
+## Usage with Cursor
+
+Cursor reads MCP configuration from `mcp.json` in either your project `.cursor` directory or your home directory.
+
+Global configuration (available in all projects), in `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "jumble": {
+      "command": "/absolute/path/to/jumble",
+      "args": ["--root", "/path/to/your/workspace"]
+    }
+  }
+}
+```
+
+Alternatively, add the same `mcpServers` block to `.cursor/mcp.json` in a single project to scope `jumble` to that project only.
+
+## Usage with Codex
+
+Codex stores MCP configuration in `~/.codex/config.toml`.
+
+Using the Codex CLI:
+
+```bash
+codex mcp add jumble -- /absolute/path/to/jumble --root /path/to/your/workspace
+```
+
+Or edit `~/.codex/config.toml` directly:
+
+```toml
+[mcp_servers.jumble]
+command = "/absolute/path/to/jumble"
+args = ["--root", "/path/to/your/workspace"]
+```
+
+Restart the Codex IDE extension or TUI and confirm that `jumble` is listed as an MCP server.
+
 ## Creating Context Files
 
-Context files are designed to be created by the same AI agents that read them. See See [AUTHORING.md](AUTHORING.md) for the complete guide.
+Context files are designed to be created by the same AI agents that read them. See [AUTHORING.md](AUTHORING.md) for the complete guide.
 
 Sample prompt:
 ```
@@ -119,6 +175,47 @@ Read the AUTHORING.md guide at /path/to/jumble/AUTHORING.md, then examine this p
 2. .jumble/conventions.toml - Capture patterns to follow and gotchas to avoid (look at existing code patterns, comments, and any constitution.md or similar files)
 3. .jumble/docs.toml - Index the docs/ directory if it exists, with one-line summaries
 ```
+
+## Core Jumble concepts
+
+These fields appear in `.jumble/project.toml` / `.jumble/workspace.toml` and are what the MCP tools expose back to the AI.
+
+- **Commands** (`[commands]`)
+  - A small map of named, copy-pastable CLI commands (e.g. `build`, `test`, `lint`, `run`, `dev`).
+  - Used by `get_commands(project, command_type)` and `get_project_info(..., field: "commands")` so the AI can tell you *exactly* how to build, test, or run a project without guessing.
+
+- **Entry points** (`[entry_points]`)
+  - Labels to the most important source files for a project (e.g. `main = "src/main.rs"`, `api = "src/api/mod.rs"`).
+  - Surface in `get_project_info(project)` so an AI can jump straight to the right file when exploring a new codebase.
+
+- **Concepts / architecture** (`[concepts.*]`)
+  - Each concept describes an architectural area with a short summary and a list of files, for example:
+    - `concepts.authentication.files = ["src/auth/mod.rs"]`
+    - `concepts.authentication.summary = "JWT-based auth via middleware"`
+  - `get_architecture(project, concept)` returns the full description and file list for one concept.
+  - `get_related_files(project, query)` searches across all concepts by name/summary to find related files (e.g. "database", "routing").
+
+- **Documentation index** (`.jumble/docs.toml`)
+  - A lightweight index of human-written docs (README, design docs, ADRs, etc.) with one-line summaries.
+  - `get_docs(project)` lists all topics and summaries so the AI can pick the right document before reading it.
+  - `get_docs(project, topic)` returns the resolved filesystem path for a single doc.
+
+- **Coding conventions and gotchas** (`.jumble/conventions.toml` and workspace `[conventions]` / `[gotchas]`)
+  - **Project-level** `conventions.toml` captures patterns to follow and sharp edges to avoid for a single project.
+  - **Workspace-level** `[conventions]` / `[gotchas]` in `.jumble/workspace.toml` describe cross-project standards and pitfalls.
+  - `get_conventions(project, ...)` returns project-specific conventions/gotchas.
+  - `get_workspace_conventions(...)` returns workspace-wide standards or gotchas.
+
+- **Related projects** (`[related_projects]`)
+  - Describes how projects in the same workspace depend on each other:
+    - `upstream = ["shared-lib"]` → projects this one depends on.
+    - `downstream = ["examples"]` → projects that depend on this one.
+  - `get_workspace_overview()` uses this to build a simple textual dependency graph so the AI can see how projects fit together.
+
+- **Workspaces** (`.jumble/workspace.toml`)
+  - Describes the overall workspace/monorepo: name, description, and shared conventions/gotchas.
+  - `get_workspace_overview()` returns workspace metadata plus the list of all projects.
+  - `get_workspace_conventions()` returns workspace-level conventions and gotchas that apply across multiple projects.
 
 ### Project Context
 
