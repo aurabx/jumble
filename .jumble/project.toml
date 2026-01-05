@@ -2,7 +2,7 @@
 name = "jumble"
 description = "MCP server providing queryable, on-demand project context to LLMs"
 language = "rust"
-version = "0.1.0"
+version = "0.5.0"
 repository = "https://github.com/xtfer/jumble"
 
 [commands]

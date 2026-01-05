@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-01-05
+
+### Added
+- **Global Jumble config**: Optional per-user config file at `~/.jumble/jumble.toml` that can hold shared defaults and settings. If the file does not exist, Jumble creates it on first run with a minimal `[jumble]` section reserved for future options.
+- **Global skills support**: Flat skills discovered from `~/.jumble/skills/*.md` in addition to project-local `.jumble/skills/*.md`. Global skills are available in every workspace.
+
+### Changed
+- Server startup now attempts to load the global config and global skills; failures to create, read, or parse these files are logged but do not prevent the server from starting.
+- Skills discovery now merges project-local and global skills, with project-local skills taking precedence when a global skill has the same name.
+
+### Documentation
+- Updated README.md and AUTHORING.md to document global config (`~/.jumble/jumble.toml`) and personal/global skills in `~/.jumble/skills/*.md`.
+
 ## [0.4.0] - 2026-01-02
 
 ### Added
