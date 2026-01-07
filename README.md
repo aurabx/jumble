@@ -50,6 +50,36 @@ cargo install --path .
 cargo install jumble
 ```
 
+## Quick Start
+
+After installing jumble, set up your AI agent integration:
+
+```bash
+# Setup Warp (creates WARP.md with usage guidance)
+jumble setup warp
+
+# Setup Claude Desktop (creates .claude/jumble-usage.md)
+jumble setup claude
+
+# Setup Cursor (creates .cursor/jumble-usage.md)
+jumble setup cursor
+
+# Setup Windsurf (creates .windsurf/jumble-usage.md)
+jumble setup windsurf
+
+# Setup Codex (creates .codex/jumble-usage.md)
+jumble setup codex
+
+# Use --global to create config in home directory instead
+jumble setup cursor --global
+```
+
+Each setup command will:
+- Create usage documentation that guides the AI agent to use jumble effectively
+- Check if jumble is configured as an MCP server
+- Provide exact copy-paste configuration if needed
+- Warn if `.jumble/project.toml` is missing
+
 ## Configuration
 
 Jumble discovers projects by scanning for `.jumble/project.toml` files. It also looks for a `.jumble/workspace.toml` at the root for workspace-level configuration.
@@ -74,6 +104,26 @@ Set the root directory via:
 
 ## Usage with Warp
 
+**Recommended:** Use the setup command to configure Warp automatically:
+
+```bash
+jumble setup warp
+```
+
+This creates `WARP.md` with guidance that tells Warp's AI agent:
+- Always start with `get_workspace_overview()` when entering a workspace
+- When to use each jumble tool (before suggesting commands, making changes, etc.)
+- How to handle missing context
+- Complete workflow examples
+
+You can force-update the jumble section in WARP.md:
+
+```bash
+jumble setup warp --force
+```
+
+### Manual MCP Configuration
+
 Add to your Warp MCP configuration:
 
 ```json
@@ -84,21 +134,22 @@ Add to your Warp MCP configuration:
   }
 }
 ```
-or, if you are building from source...
-
-```json
-{
-  "jumble": {
-    "args": [
-      "--root",
-      "/path/to/your/workspace"
-    ],
-    "command": "/<path/to/repository>/target/release/jumble"
-  }
-}
-```
 
 ## Usage with Claude Desktop
+
+**Recommended:** Use the setup command:
+
+```bash
+# Project-specific (creates .claude/jumble-usage.md)
+jumble setup claude
+
+# Global (creates ~/.claude/jumble-usage.md)
+jumble setup claude --global
+```
+
+The setup command creates a comprehensive usage guide and checks if jumble is configured in Claude Desktop.
+
+### Manual MCP Configuration
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -124,6 +175,18 @@ Structured skills (Claude/Codex format) can include companion resources like `sc
 
 ## Usage with Windsurf
 
+**Recommended:** Use the setup command:
+
+```bash
+# Project-specific (creates .windsurf/jumble-usage.md)
+jumble setup windsurf
+
+# Global (creates ~/.codeium/windsurf/jumble-usage.md)
+jumble setup windsurf --global
+```
+
+### Manual MCP Configuration
+
 Windsurf's Cascade MCP config uses the same shape as Claude Desktop's config. Create or edit `~/.codeium/windsurf/mcp_config.json`:
 
 ```json
@@ -140,6 +203,18 @@ Windsurf's Cascade MCP config uses the same shape as Claude Desktop's config. Cr
 Restart Windsurf so Cascade reloads MCP servers, then verify that `jumble` appears in the tools list.
 
 ## Usage with Cursor
+
+**Recommended:** Use the setup command:
+
+```bash
+# Project-specific (creates .cursor/jumble-usage.md and .cursor/mcp.json)
+jumble setup cursor
+
+# Global (creates ~/.cursor/jumble-usage.md and ~/.cursor/mcp.json)
+jumble setup cursor --global
+```
+
+### Manual MCP Configuration
 
 Cursor reads MCP configuration from `mcp.json` in either your project `.cursor` directory or your home directory.
 
@@ -159,6 +234,18 @@ Global configuration (available in all projects), in `~/.cursor/mcp.json`:
 Alternatively, add the same `mcpServers` block to `.cursor/mcp.json` in a single project to scope `jumble` to that project only.
 
 ## Usage with Codex
+
+**Recommended:** Use the setup command:
+
+```bash
+# Project-specific (creates .codex/jumble-usage.md)
+jumble setup codex
+
+# Global (creates ~/.codex/jumble-usage.md)
+jumble setup codex --global
+```
+
+### Manual MCP Configuration
 
 Codex stores MCP configuration in `~/.codex/config.toml`.
 
