@@ -32,6 +32,9 @@ enum Commands {
     /// Run the MCP server (default if no subcommand specified)
     Server,
 
+    /// Initialize a new jumble project
+    Init,
+
     /// Setup AI agent integrations
     Setup {
         #[command(subcommand)]
@@ -90,6 +93,7 @@ fn main() -> Result<()> {
             // Run MCP server (default mode)
             run_server(root)
         }
+        Some(Commands::Init) => setup::setup_init(&root),
         Some(Commands::Setup { agent }) => match agent {
             SetupCommands::Warp { force } => setup::setup_warp(&root, force),
             SetupCommands::Claude { global } => setup::setup_claude(&root, global),

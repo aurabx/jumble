@@ -305,6 +305,7 @@ impl Server {
                 tools::get_workspace_conventions(&self.workspace, &arguments)
             }
             "get_jumble_authoring_prompt" => tools::get_jumble_authoring_prompt(),
+            "init_project" => tools::init_project(&self.root, &arguments),
             "store_memory" => tools::store_memory(&self.projects, &arguments),
             "get_memory" => tools::get_memory(&self.projects, &arguments),
             "list_memories" => tools::list_memories(&self.projects, &arguments),

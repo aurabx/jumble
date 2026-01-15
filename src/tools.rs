@@ -338,6 +338,20 @@ pub fn tools_list() -> Value {
                     "properties": {},
                     "required": []
                 }
+            },
+            {
+                "name": "init_project",
+                "description": "Initializes a new jumble project by creating the necessary directories and configuration files. Creates .jumble, .ai, docs directories and initializes project.toml, constitution.md, AGENTS.md, and .gitignore.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "directory": {
+                            "type": "string",
+                            "description": "The directory path to initialize the project in. Supports both absolute and relative paths."
+                        }
+                    },
+                    "required": ["directory"]
+                }
             }
         ]
     })
@@ -1375,6 +1389,28 @@ pub fn clear_memories(
             if deleted_count == 1 { "y" } else { "ies" },
             project_name
         ))
+    }
+}
+
+pub fn init_project(_workspace_root: &std::path::PathBuf, args: &Value) -> Result<String, String> {
+    // Get the target directory from arguments (required)
+    let dir_str = args
+        .get("directory")
+        .and_then(|v| v.as_str())
+        .ok_or("Missing 'directory' argument")?;
+    
+    let target_dir = std::path::PathBuf::from(dir_str);
+    
+    // Ensure the directory exists or can be created
+    if !target_dir.exists() {
+        std::fs::create_dir_all(&target_dir)
+            .map_err(|e| format!("Failed to create directory '{}': {}", target_dir.display(), e))?;
+    }
+    
+    // Use the setup module's init function
+    match crate::setup::setup_init(&target_dir) {
+        Ok(()) => Ok(format!("Project initialized successfully in {}.", target_dir.display())),
+        Err(e) => Err(format!("Failed to initialize project: {}", e)),
     }
 }
 
