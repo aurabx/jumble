@@ -1,3 +1,8 @@
+
+Most of Jumble's features are now part of [Automatic](https://tryautomatic.app/).
+
+---
+
 # jumble
 
 An MCP server that provides queryable, on-demand project context to LLMs.
